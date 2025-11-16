@@ -7,6 +7,7 @@ target/
 # H2 Database Files
 data/*.mv.db
 data/*.trace.db
+data/*.lock.db
 data/*.h2.db
 
 
