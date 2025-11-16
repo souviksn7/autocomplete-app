@@ -31,8 +31,6 @@ The application loads names from a file into H2 DB, builds an in-memory Trie, an
 
 ---
 
----
-
 ## 🐳 Running with Docker
 
 ### 1. Build the Docker image
