@@ -2,8 +2,10 @@ package com.souvik.autocomplete.exception;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 
 import java.time.Instant;
 import java.util.Map;
@@ -15,13 +17,35 @@ import java.util.Map;
  */
 @ControllerAdvice
 public class GlobalExceptionHandler {
+
+    /**
+     * Utility method to construct a standardized error response object.
+     *
+     * @param status HTTP status to return
+     * @param msg    error message to include in the response
+     */
+    private ResponseEntity<ErrorDetails> build(HttpStatus status, String msg) {
+        return new ResponseEntity<>(
+                new ErrorDetails(status.value(), status.getReasonPhrase(), msg),
+                status
+        );
+    }
+
+    /**
+     * Handles cases where a required request parameter is missing.
+     * Returns 400 Bad Request.
+     */
+    @ExceptionHandler(MissingServletRequestParameterException.class)
+    public ResponseEntity<ErrorDetails> handleMissingParam(MissingServletRequestParameterException ex) {
+        return build(HttpStatus.BAD_REQUEST, "Missing required parameter: " + ex.getParameterName());
+    }
+
+    /**
+     * Handles any unexpected/unhandled server-side exceptions.
+     * Returns a 500 Internal Server Error with the exception message.
+     */
     @ExceptionHandler(Exception.class)
-    public ResponseEntity<?> handleException(Exception ex) {
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of(
-                        "timestamp", Instant.now().toString(),
-                        "error", ex.getClass().getSimpleName(),
-                        "message", ex.getMessage()
-                ));
+    public ResponseEntity<ErrorDetails> handleGeneralError(Exception ex) {
+        return build(HttpStatus.INTERNAL_SERVER_ERROR, ex.getMessage());
     }
 }

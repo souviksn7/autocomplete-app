@@ -8,8 +8,11 @@ import java.sql.PreparedStatement;
 import java.util.List;
 
 /**
- * Utility class that loads names from a text file into the H2 database.
- * This is executed once before the application runs.
+ * Loads names from a text file into the file-based H2 database.
+ *
+ * This utility is executed once (outside the Spring Boot app) to populate
+ * the 'names' table before the application starts. The main application
+ * never reads the file directly, which follows the assignment requirement.
  */
 public class DbLoader {
     public static void main(String[] args) throws Exception {
@@ -23,19 +26,20 @@ public class DbLoader {
         String filepath = args[0];
         List<String> lines = Files.readAllLines(Path.of(filepath));
 
-        // File-based H2 database
+        // File-based H2 DB stored under /data/namesdb
         String jdbc = "jdbc:h2:file:./data/namesdb;AUTO_SERVER=TRUE";
 
         try (Connection conn = DriverManager.getConnection(jdbc, "sa", "")) {
             conn.setAutoCommit(false);
 
-            // Create table if missing
+            // Create table if it doesn't exist
             conn.createStatement().execute(
                     "CREATE TABLE IF NOT EXISTS names (" +
                             "id BIGINT AUTO_INCREMENT PRIMARY KEY," +
                             "name VARCHAR(255) UNIQUE NOT NULL)"
             );
 
+            // Insert or update names
             try (PreparedStatement ps = conn.prepareStatement(
                     "MERGE INTO names(name) KEY(name) VALUES(?)")) {
 
