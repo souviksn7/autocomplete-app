@@ -26,7 +26,10 @@ import java.util.*;
         wordsBelow.add(word);
     }
 
-    /** Registers a word under this node for fast prefix lookup. */
+    /**
+     * Returns an unmodifiable view of all names stored under this Trie node.
+     * Prevents external code from modifying the internal list.
+     */
     List<String> getWordsBelow(){
         return Collections.unmodifiableList(wordsBelow);
     }
